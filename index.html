@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- dev -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- production -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+    <style>
+      textarea {
+        width: 100%;
+        margin-top: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Gmail Auto-Responder</h1>
+      <p>{{ message }}</p>
+      <div v-if="sheet" class="cannedResponses">
+        <ul>
+          <li v-for="(response, i) in cannedResponses">
+            <button @click="remove(i)">delete</button>
+            <label :for="`label${i}`">Label:</label>
+            <input type="text" :name="`label${i}`" v-model="response[0]">
+            <label :for="`response${i}`">reply:</label>
+            <textarea :name="`response${i}`" v-model="response[1]"></textarea>
+          </li>
+        </ul>
+        <button v-if="cannedResponses.length" type="button" @click="save">save</button>
+        <button type="button" @click="add">add</button>
+        <button type="button" @click="answerMails">answer Mails now!</button>
+      </div>
+      <button v-else @click="createSpreadsheet">Create Spreadsheet</button>
+      <div v-if="!hasTriggers" class="trigger">
+        <button @click="createTrigger">Create Trigger (12h)</button>
+      </div>
+      <div v-else>
+        <a href="https://script.google.com/home/triggers">Meine Trigger verwalten</a>
+      </div>
+    </div>
+    <script>
+      Vue.config.devtools = true
+      Vue.config.productionTip = true
+      new Vue({
+        el: '#app',
+        data: {
+          message: '',
+          cannedResponses: [],
+          sheet: true,
+          hasTriggers: true
+        },
+        methods: {
+          run(funcName, args) {
+            if (!Array.isArray(args)) {
+              args = [args]
+            }
+            return new Promise((resolve, reject) => {
+              google.script.run
+              .withSuccessHandler(data => {
+                resolve(data)
+              })
+              .withFailureHandler(err => {
+                reject(err)
+              })
+              [funcName](...args)
+            })
+          },
+          fetchData() {
+            return this.run('getData').then(data => {
+              this.cannedResponses = data
+            })
+          },
+          showMessage(message) {
+            this.message = message
+            setTimeout(() => this.message = '', 2500)
+          },
+          showErrorMessage() {
+            this.showMessage('Whoops! Something went wrong :(')
+          },
+          save() {
+            this.run('saveData', [this.cannedResponses]).then(() => {
+              this.showMessage('Data saved!')
+            }).catch(() => {
+              this.showErrorMessage()
+            })
+          },
+          add() {
+            this.cannedResponses.push(['', ''])
+          },
+          remove(row) {
+            const data = [...this.cannedResponses]
+            //delete the row
+            data.splice(row, 1)
+            //append empty row to delete in sheet
+            data.push(['', ''])
+            this.run('saveData', [data]).then(() => {
+              this.cannedResponses.splice(row, 1)
+              this.message = 'Deleted :)!'
+            }).catch(() => {
+              this.showErrorMessage()
+            })
+          },
+          createSpreadsheet() {
+            this.run('createSpreadsheet').then(() => {
+              this.fetchData().then(() => {
+                this.sheet = true
+              })
+            }).catch(() => {
+              this.showErrorMessage()
+            })
+          },
+          createTrigger() {
+            this.run('createTimeDrivenTrigger').then(() => {
+              this.hasTriggers = true
+            }).catch(() => {
+              this.showErrorMessage()
+            })
+          },
+          answerMails() {
+            this.run('answerMails').then(() => {
+              this.showMessage('Mails got answered!')
+            })
+          }
+        },
+        created() {
+          this.fetchData().catch(err => {
+            if (err.message == 'Error: No Spreadsheet available') {
+              this.sheet = false
+            }
+          })
+          this.run('projectHasTriggers').then(hasTriggers => this.hasTriggers = hasTriggers)
+        }
+      })
+    </script>
+  </body>
+</html>
