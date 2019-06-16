@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <h1 id="message">You'll not recieve further auto reply's!<h1>
+    <button id="undo">Undo</button>
+    <script>
+      function run(funcName, args) {
+        if (!Array.isArray(args)) {
+          args = [args]
+        }
+        return new Promise((resolve, reject) => {
+          google.script.run
+          .withSuccessHandler(data => {
+            resolve(data)
+          })
+          .withFailureHandler(err => {
+            reject(err)
+          })
+          [funcName](...args)
+        })
+      }
+      document.getElementById('undo').addEventListener('click', event => {
+        const parameters = [
+          <?= parameters.mailAddress ?>,
+          <?= parameters.sourceMailAddress ?>,
+          <?= parameters.label ?>
+        ]
+        run('undo', parameters).then(() => {
+          document.getElementById('message').innerText = "You'll receive auto reply's again. If you don't want them, reload this page."
+          event.target.style.display = 'none'
+        }).catch(e => console.log(e.message))
+      })
+    </script>
+  </body>
+</html>

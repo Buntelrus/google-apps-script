@@ -5,7 +5,13 @@ function doGet(e) {
     const mailAddress = e.parameter.noreply
     if (e.parameter.key && e.parameter.key == computeHash(sourceMailAddress + label + mailAddress)) {
       doNotReplyAgain(mailAddress, sourceMailAddress, label)
-      return ContentService.createTextOutput("You'll not recieve further auto reply's!")
+      const template = HtmlService.createHtmlOutputFromFile('index.html').asTemplate()
+      template.parameters = {
+        mailAddress: mailAddress,
+        sourceMailAddress: sourceMailAddress,
+        label: label
+      }
+      return template.evaluate()
     }
     return ContentService.createTextOutput('Sorry! You are not allowed to do this.')
   } else {
@@ -20,5 +26,16 @@ function doNotReplyAgain(mailAddress, sourceMailAddress, label) {
   if (!data || !data[label] || getObjectValues(data[label]).indexOf(mailAddress) === -1) {
     //finally adding noreply address to db
     db.pushData(sourceMailAddress + '/' + label, mailAddress)
+  }
+}
+function undo(mailAddress, sourceMailAddress, label) {
+  const db = getFirebaseDB()
+  sourceMailAddress = sourceMailAddress.replace('.', ',')
+  const data = db.getData(sourceMailAddress + '/' + label)
+  for (var index in data) {
+    if (data[index] === mailAddress) {
+      db.removeData(sourceMailAddress + '/' + label + '/' + index)
+      break
+    }
   }
 }
