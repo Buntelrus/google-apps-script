@@ -3,7 +3,7 @@ function doGet(e) {
     const sourceMailAddress = e.parameter.source
     const label = e.parameter.label
     const mailAddress = e.parameter.noreply
-    if (e.parameter.key && e.parameter.key == computeHash(sourceMailAddress + label + mailAddress)) {
+    if (e.parameter.key && e.parameter.key == decodeURIComponent(computeHash(sourceMailAddress + label + mailAddress))) {
       doNotReplyAgain(mailAddress, sourceMailAddress, label)
       const template = HtmlService.createHtmlOutputFromFile('index.html').asTemplate()
       template.parameters = {

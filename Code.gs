@@ -76,7 +76,7 @@ function answerMails() {
         const sourceMailAddress = Session.getEffectiveUser().getEmail()
         const regex = /<(.+)>/
         var mailAddress = thread.getMessages().pop().getFrom()
-        if (mailAddress.match(regex)[1]) {
+        if (mailAddress.match(regex)) {
           mailAddress = mailAddress.match(regex)[1]
         }
         //firebase doesn't support dots in path
@@ -89,7 +89,7 @@ function answerMails() {
           '?source=' + sourceMailAddress +
           '&label=' + labelName +
           '&noreply=' + mailAddress +
-          '&key=' + computeHash(sourceMailAddress + labelName + mailAddress)
+          '&key=' + encodeURIComponent(computeHash(sourceMailAddress + labelName + mailAddress))
         reply = reply.replace(/\[\[(.+)\]\]/, function(match, g1) {
           return '<a href="' + stopReplyUrl + '">' + g1 + '</a>'
         })
