@@ -93,6 +93,8 @@ function answerMails() {
         reply = reply.replace(/\[\[(.+)\]\]/, function(match, g1) {
           return '<a href="' + stopReplyUrl + '">' + g1 + '</a>'
         })
+        //fix linebreaks
+        .replace(/\n/g, '<br>')
         thread.reply('', {
           htmlBody: reply
         })
