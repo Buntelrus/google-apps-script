@@ -81,7 +81,7 @@ function answerMails() {
         }
         //firebase doesn't support dots in path
         const data = db.getData(sourceMailAddress.replace('.', ','))
-        if (getObjectValues(data[labelName]).indexOf(mailAddress) !== -1) {
+        if (data && getObjectValues(data[labelName]).indexOf(mailAddress) !== -1) {
           //this user doesn't want further auto reply's
           return
         }
