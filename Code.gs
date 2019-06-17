@@ -102,6 +102,8 @@ function answerMails() {
         thread.reply('', {
           htmlBody: reply
         })
+      })
+      threads.forEach(function(thread) {
         thread.removeLabel(label)
       })
     }
