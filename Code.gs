@@ -64,6 +64,10 @@ function answerMails() {
     const labelName = row[0]
     var reply = row[1]
     const label = GmailApp.getUserLabelByName(labelName)
+    if (!label) {
+      //no label available go to next
+      return
+    }
     const threads = label.getThreads()
       // ignore no reply conversations
       .filter(function(gt) {
