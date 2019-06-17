@@ -96,7 +96,7 @@
             data.push(['', ''])
             this.run('saveData', [data]).then(() => {
               this.cannedResponses.splice(row, 1)
-              this.message = 'Deleted :)!'
+              this.showMessage('Deleted :)')
             }).catch(() => {
               this.showErrorMessage()
             })
