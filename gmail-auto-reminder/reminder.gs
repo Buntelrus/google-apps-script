@@ -18,7 +18,7 @@ function sendReminders() {
      * @returns {number} age in days
      */
     function getAgeInDays(timestamp) {
-        return parseInt((new Date - timestamp) /1000/60/60/24)
+        return Math.ceil((new Date - timestamp) /1000/60/60/24)
     }
     /**
      * Create Draft email.
